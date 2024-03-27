@@ -25,10 +25,23 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
+const getRandomInt = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+};
 function activate(context) {
-    const themes = vscode.extensions.all.filter(ext => ext.packageJSON.contributes?.themes);
-    let disposable = vscode.commands.registerCommand('random-theme-asco.helloWorld', () => {
-        vscode.window.showInformationMessage('Hello World from random-theme-asco!');
+    const themes = vscode.extensions.all
+        .filter(ext => ext.packageJSON.contributes?.themes)
+        .reduce((acc, theme) => {
+        const themesInfo = theme.packageJSON.contributes.themes;
+        return acc.concat(themesInfo.map(theme => theme.id || theme.label));
+    }, []);
+    const disposable = vscode.commands.registerCommand('simple-yt-random-theme.random-theme', async () => {
+        const randomTheme = themes[getRandomInt(0, themes.length)];
+        const userSettings = vscode.workspace.getConfiguration();
+        await userSettings.update('workbench.colorTheme', randomTheme, true);
+        vscode.window.showInformationMessage(`Тема изменена на ${randomTheme}`);
     });
     context.subscriptions.push(disposable);
 }
